@@ -52,7 +52,15 @@ bool fft_kjor(float &fart_ut) {
 
     // Signal for svakt – sannsynligvis ingen bil
     if (maxMag < MAG_GRENSE) {
-        //legg_i_buffer(0.0f); -> finne annen håndtering av ugyldige måleringer
+        legg_i_buffer(0.0f); // -> finne annen håndtering av ugyldige måleringer
+
+        /*
+        float frekvens = FFT->majorPeakFreq();
+        float fart_kmh = frekvens * SVILL_AVSTAND * 3.6f;
+
+        legg_i_buffer(fart_kmh);
+        fart_ut = fart_kmh;
+        */
         return false;
     }
 

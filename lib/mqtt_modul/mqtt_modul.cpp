@@ -7,6 +7,9 @@
 static WiFiClient   wifiClient;
 static PubSubClient mqttClient(wifiClient);
 
+// ── Flagg ─────────────────────────────────────────────────────────────────────
+volatile bool system_aktiv = true;
+
 // ── Interne hjelpefunksjoner ──────────────────────────────────────────────────
 static void blink_led(int ganger, int varighet_ms) {
     for (int i = 0; i < ganger; i++) {
@@ -34,15 +37,25 @@ static void koble_til_wifi() {
 }
 
 static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
-    if (String(topic) == MQTT_TOPIC_SUB) {
-        String tekst = "";
-        for (unsigned int i = 0; i < lengde; i++) {
-            tekst += (char)melding[i];
+    String tekst = "";
+    for (unsigned int i = 0; i < lengde; i++) {
+        tekst += (char)melding[i];
+    }
+
+    Serial.print("Mottatt på ");
+    Serial.print(topic);
+    Serial.print(": ");
+    Serial.println(tekst);
+
+    if (String(topic) == MQTT_TOPIC_CMD) {
+        if (tekst == "OFF") {
+            Serial.println("System deaktivert.");
+            system_aktiv = false;
+        } else if (tekst == "ON") {
+            Serial.println("System aktivert – restarter...");
+            delay(500);
+            ESP.restart();
         }
-        Serial.print("Mottatt på ");
-        Serial.print(topic);
-        Serial.print(": ");
-        Serial.println(tekst);
     }
 }
 
@@ -54,6 +67,7 @@ static void koble_til_mqtt() {
         if (mqttClient.connect(MQTT_CLIENT_ID)) {
             Serial.println("tilkoblet.");
             mqttClient.subscribe(MQTT_TOPIC_SUB);
+            mqttClient.subscribe(MQTT_TOPIC_CMD);
         } else {
             Serial.print("Feil, rc=");
             Serial.print(mqttClient.state());
@@ -80,10 +94,9 @@ void mqtt_loop() {
     mqttClient.loop();
 }
 
-void mqtt_send_fart(float* verdier, int antall) {
+void mqtt_send_fart_array(float* verdier, int antall) {
     if (!mqttClient.connected()) return;
 
-    // Bygg JSON-array: [12.10,11.60,10.00]
     String payload = "[";
     for (int i = 0; i < antall; i++) {
         payload += String(verdier[i], 2);
@@ -91,7 +104,27 @@ void mqtt_send_fart(float* verdier, int antall) {
     }
     payload += "]";
 
-    mqttClient.publish(MQTT_TOPIC_PUB, payload.c_str());
+    mqttClient.publish(MQTT_TOPIC_PUB_ARRAY, payload.c_str());
     Serial.print("Sendt: ");
+    Serial.println(payload);
+}
+
+void mqtt_send_fart_int(float verdi) {
+    if (!mqttClient.connected()) return;
+
+    String payload = String(verdi, 2);
+
+    mqttClient.publish(MQTT_TOPIC_PUB_FART, payload.c_str());
+    Serial.print("Sendt fart: ");
+    Serial.println(payload);
+}
+
+void mqtt_send_snitt(float verdi) {
+    if (!mqttClient.connected()) return;
+
+    String payload = String(verdi, 2);
+
+    mqttClient.publish(MQTT_TOPIC_PUB_SNITT, payload.c_str());
+    Serial.print("Sendt gjennomsnittsfart: ");
     Serial.println(payload);
 }

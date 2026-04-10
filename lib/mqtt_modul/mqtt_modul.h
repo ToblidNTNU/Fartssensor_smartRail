@@ -22,4 +22,24 @@ void mqtt_loop();
  * @param verdier   Peker til array med fartverdier
  * @param antall    Antall verdier i arrayen
  */
-void mqtt_send_fart(float* verdier, int antall);
+void mqtt_send_fart_array(float* verdier, int antall);
+
+/**
+ * Send en enkelt fartverdi til MQTT-topic.
+ *
+ * @param verdi  Fartverdi
+ */
+void mqtt_send_fart_int(float verdi);
+
+/**
+ * Send gjennomsnittsfart til MQTT-topic som enkeltverdi.
+ *
+ * @param verdi  Gjennomsnittsfart
+ */
+void mqtt_send_snitt(float verdi);
+
+
+ 
+// Flagg satt av innkommende kommandoer fra Node-RED.
+// volatile: hindrer kompilatoren fra å cache verdien, siden den kan endres naar som helst.
+extern volatile bool system_aktiv;
