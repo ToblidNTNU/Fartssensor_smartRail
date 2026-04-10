@@ -4,7 +4,7 @@
 #include "mqtt_modul.h"
 
 // ── Fartsdata-buffer ──────────────────────────────────────────────────────────
-#define SEND_BUFFER_SIZE 10
+#define SEND_BUFFER_SIZE 1
 static float    send_buffer[SEND_BUFFER_SIZE];
 static int      send_index = 0;
 
