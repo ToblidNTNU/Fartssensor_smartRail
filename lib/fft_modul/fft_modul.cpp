@@ -2,6 +2,25 @@
 #include "config.h" 
 #include "ESP_fft.h"
 
+/*
+*  fft_modul.cpp - Modul for å håndtere FFT-beregninger for fartsmåling
+*  Denne modulen samler inn signaldata fra en sensor, utfører FFT for å finne den
+*  dominerende frekvensen, og konverterer denne til en fartsmåling i km/t. Resultatene
+*  lagres i en sirkulær buffer for senere bruk, f.eks. for å beregne gjennomsnittsfart 
+*  eller for å vise på en display.
+*  Forutsetninger:
+*  - Sensoren gir et digitalt signal som kan leses med digitalRead() (kan tilpasses for analogRead() eller annen sensor)
+*  - FFT_N og SAMPLEFREQ er definert i config.h
+*  - SVILL_AVSTAND er avstanden mellom to sviller i meter, definert i config.h
+*  - MAG_GRENSE er en magnisitetsgrense for å avgjøre om det er et gyldig signal (bil) eller ikke, definert i config.h
+*  - BUFFER_SIZE er størrelsen på den sirkulære bufferen for fartsmålinger, definert i config.h
+*  Bruk:
+*  - Kall fft_init() i setup() for å initialisere FFT-modulen
+*  - Kall fft_kjor() i loop() for å utføre FFT og få fartsmålingen. Den returnerer true hvis en gyldig måling er gjort, og false hvis signalet var for svakt.
+*  - Bruk fft_buffer_snitt() for å få gjennomsnittsfarten basert på de siste målingene i bufferen, og fft_buffer_nullstill() for å tømme bufferen ved behov.
+*/
+
+
 // ── Interne buffere (kun synlige i denne filen) ───────────────────────────────
 static float samples[FFT_N];
 static float spectrum[FFT_N];
@@ -54,7 +73,7 @@ bool fft_kjor(float &fart_ut) {
     if (maxMag < MAG_GRENSE) {
         legg_i_buffer(0.0f); // -> finne annen håndtering av ugyldige måleringer
 
-        /*
+        /* Hvis vi vil returnere den målte farten i stedet for å ignorere målingen, kan vi gjøre det her:
         float frekvens = FFT->majorPeakFreq();
         float fart_kmh = frekvens * SVILL_AVSTAND * 3.6f;
 

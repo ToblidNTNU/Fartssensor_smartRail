@@ -3,6 +3,27 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
+
+
+/*
+*  mqtt_modul.cpp - Modul for å håndtere MQTT-kommunikasjon
+*  Denne modulen kobler til WiFi og en MQTT-broker, og håndterer sending av data og mottak av kommandoer. Den bruker PubSubClient-biblioteket for MQTT-funksjonalitet.
+*  Forutsetninger:
+*  - WiFi-credentials (SSID og passord) er definert i config.h
+*  - MQTT-server og port er definert i config.h
+*  - Temaer for MQTT-kommunikasjon er definert i config.h
+*  Bruk:
+*  - Kall mqtt_init() i setup() for å initialisere MQTT-modulen og koble til WiFi og MQTT-broker
+*  - Kall mqtt_loop() i loop() for å håndtere MQTT-kommunikasjon kontinuerlig
+*  - Bruk mqtt_send_fart_array(), mqtt_send_fart_int() og mqtt_send_snitt() for å sende data til MQTT-broker
+*  - Mottatte MQTT-meldinger på temaet MQTT_TOPIC_CMD håndteres i mottatt_melding() og kan brukes til å styre systemets tilstand (f.eks. ON/OFF/RESET)
+*  - Systemets tilstand styres av flagget system_aktiv, som kan settes til false for å deaktivere systemet (f.eks. ved å stoppe datainnsamling og sending), og true for å aktivere det igjen.
+*  - For å restarte systemet, kan du sende "RESET" som kommando, som vil kalle ESP.restart() for å starte hele systemet på nytt.
+* - For å indikere feil ved tilkobling til MQTT-broker, blinker LED_PIN 3 ganger raskt.
+*  Merk: Denne modulen fokuserer på MQTT-kommunikasjon og tilkobling. Den håndterer ikke selve datainnsamlingen eller FFT-beregningene, som bør implementeres i andre moduler (f.eks. fft_modul). Det er viktig å sørge for at mqtt_loop() kalles ofte nok i loop() for å opprettholde MQTT-tilkoblingen og håndtere innkommende meldinger.
+*/
+
+
 // ── Interne objekter ──────────────────────────────────────────────────────────
 static WiFiClient   wifiClient;
 static PubSubClient mqttClient(wifiClient);
@@ -53,8 +74,13 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
             system_aktiv = false;
         } else if (tekst == "ON") {
             Serial.println("System aktivert – restarter...");
+            system_aktiv = true;
+        } else if (tekst == "RESET") {
+            Serial.println("System resettes...");
             delay(500);
             ESP.restart();
+        } else {
+            Serial.println("Ukjent kommando.");
         }
     }
 }
