@@ -30,6 +30,8 @@ static PubSubClient mqttClient(wifiClient);
 
 // ── Flagg ─────────────────────────────────────────────────────────────────────
 volatile bool system_aktiv = true;
+volatile bool lidar_modus = true;
+
 
 // ── Interne hjelpefunksjoner ──────────────────────────────────────────────────
 static void blink_led(int ganger, int varighet_ms) {
@@ -73,12 +75,20 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
             Serial.println("System deaktivert.");
             system_aktiv = false;
         } else if (tekst == "ON") {
-            Serial.println("System aktivert – restarter...");
+            Serial.println("System aktivert...");
             system_aktiv = true;
         } else if (tekst == "RESET") {
             Serial.println("System resettes...");
             delay(500);
             ESP.restart();
+        } else if (tekst == "STYRKE") {
+            Serial.println("Bytter til STYRKE-modus");
+            delay(500);
+            lidar_modus = false;
+        } else if (tekst == "AVSTAND") {
+            Serial.println("Bytter til AVSTAND-modus");
+            delay(500);
+            lidar_modus = true;
         } else {
             Serial.println("Ukjent kommando.");
         }

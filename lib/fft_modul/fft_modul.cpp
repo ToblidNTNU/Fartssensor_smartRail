@@ -2,6 +2,7 @@
 #include "config.h" 
 #include "ESP_fft.h"
 #include "lidar_modul.h" 
+#include "mqtt_modul.h"
 
 /*
 *  fft_modul.cpp - Modul for å håndtere FFT-beregninger for fartsmåling
@@ -40,25 +41,43 @@ void fft_init() {
 
 // ── Hjelpefunksjon: samle inn samples fra sensor ──────────────────────────────
 static void samle_signal() {
+    unsigned long total_start = micros();
+    unsigned long intervall_us = 1000000 / SAMPLEFREQ;
+
     for (int i = 0; i < FFT_N; i++) {
+        unsigned long start = micros();  // Ta tiden FØR lesing
 
         int avstand = 0;
         int styrke  = 0;
 
-        //Avlesing av lidar-data. Her kan vi vurdere å bruke styrke i stedenfor avstand.
         if (lidar_les(avstand, styrke)) {
-            samples[i] = (float)avstand;
-            //Serial.println("[fft_modul] Sample " + String(i) + ": Avstand = " + String(avstand) + " mm, Styrke = " + String(styrke));
+            if (lidar_modus) samples[i] = (float)avstand;
+            else if (!lidar_modus) samples[i] = (float)styrke;
         } else {
-            samples[i] = 0.0f;   // ugyldig måling – sett til 0
+            samples[i] = 0.0f;
         }
 
-        /* Knappesimulering:
-        samples[i] = (digitalRead(SENSOR_PIN) ? 1.0f : -1.0f) * 5.0f;
-        */
+        unsigned long etter_les = micros();
 
-        delayMicroseconds(1000000 / SAMPLEFREQ);
+
+        // Vent kun gjenværende tid av intervallet
+        long resterende = intervall_us - (etter_les - start);
+        if (resterende > 0) delayMicroseconds(resterende);
+
+
+        /* for sjekking av timing
+        if (i < 3) {
+            Serial.printf("Sample %d: les=%lu µs, resterende=%ld µs, total=%lu µs\n",
+                i, etter_les - start, resterende, micros() - start);
+        }
+        */
     }
+    //for sjekking av total timing
+    /*
+    Serial.printf("Totalt: %lu ms for %d samples\n", 
+        (micros() - total_start) / 1000, FFT_N);
+        */
+    
 }
 
 // ── Hjelpefunksjon: legg verdi i sirkulær buffer ──────────────────────────────
@@ -75,7 +94,28 @@ bool fft_kjor(float &fart_ut) {
         return false;
     }
 
+    rydd_buffer();
     samle_signal();
+
+    // Etter samle_signal(), før FFT->hammingWindow()
+    // Beregn gjennomsnitt og standardavvik
+    float sum = 0.0f;
+    for (int i = 0; i < FFT_N; i++) sum += samples[i];
+    float snitt = sum / FFT_N;
+
+    float varians = 0.0f;
+    for (int i = 0; i < FFT_N; i++) {
+        float diff = samples[i] - snitt;
+        varians += diff * diff;
+    }
+    float stddev = sqrt(varians / FFT_N);
+
+    // Normaliser
+    if (stddev > 0.0f) {
+        for (int i = 0; i < FFT_N; i++) {
+            samples[i] = (samples[i] - snitt) / stddev;
+        }
+    }
 
     FFT->hammingWindow();
     FFT->removeDC();
@@ -103,10 +143,11 @@ bool fft_kjor(float &fart_ut) {
 
 
     //Debug-utskrift av FFT-resultater
+    /*
     Serial.printf("Fundamental Freq : %f Hz\t Mag: %f g\n", FFT->majorPeakFreq(), (FFT->majorPeak()/10000)*2/FFT_N);
     for (int i=0; i< 10; i++) {
         Serial.printf("%f Hz: %f\n", FFT->frequency(i),spectrum[i]);
-    }
+    }*/
 
     legg_i_buffer(fart_kmh);
     fart_ut = fart_kmh;

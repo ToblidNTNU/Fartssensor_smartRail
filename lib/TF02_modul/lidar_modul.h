@@ -18,3 +18,10 @@ void lidar_init();
  * @return            true hvis gyldig måling ble lest, false ellers.
  */
 bool lidar_les(int &avstand_ut, int &styrke_ut);
+
+
+/**
+ * 
+ * 
+ */
+void rydd_buffer();

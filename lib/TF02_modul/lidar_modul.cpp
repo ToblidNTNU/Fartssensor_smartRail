@@ -24,11 +24,15 @@ static void sett_millimeter_modus() {
     Serial.println("[lidar] Millimeter-modus aktivert");
 }
 
-static void rydd_buffer() {
+
+
+// ── Offentlige funksjoner ─────────────────────────────────────────────────────
+
+void rydd_buffer() {
     while (lidarSerial.available()) lidarSerial.read();
 }
 
-// ── Offentlige funksjoner ─────────────────────────────────────────────────────
+
 void lidar_init() {
     lidarSerial.begin(LIDAR_BAUD, SERIAL_8N1, LIDAR_RX_PIN, LIDAR_TX_PIN);
     delay(500);
@@ -43,12 +47,18 @@ void lidar_init() {
 }
 
 bool lidar_les(int &avstand_ut, int &styrke_ut) {
-    // Finn startbyte 0x59
-    while (lidarSerial.available() && lidarSerial.peek() != 0x59) {
-        lidarSerial.read();
+
+    // Vent på startbyte, med timeout
+    unsigned long timeout = micros() + 3000;
+    while (micros() < timeout) {
+        // Kast bytes frem til 0x59
+        while (lidarSerial.available() && lidarSerial.peek() != 0x59) {
+            lidarSerial.read();
+        }
+        // Sjekk om vi har startbyte OG full pakke
+        if (lidarSerial.available() >= 9 && lidarSerial.peek() == 0x59) break;
     }
 
-    // Vent til full pakke (9 bytes) er tilgjengelig
     if (lidarSerial.available() < 9) return false;
 
     // Les pakken
@@ -66,9 +76,7 @@ bool lidar_les(int &avstand_ut, int &styrke_ut) {
 
     int avstand = uart_buf[2] + (uart_buf[3] * 256);
     int styrke  = uart_buf[4] + (uart_buf[5] * 256);
-    //Byte 6 og 7 inneholder temperatur, men vi trenger den ikke nå
 
-    // Filtrer ut sensorens ugyldig-verdi
     if (avstand == LIDAR_UGYLDIG) return false;
 
     avstand_ut = avstand;

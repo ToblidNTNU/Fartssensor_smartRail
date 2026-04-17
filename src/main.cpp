@@ -53,6 +53,7 @@ void loop() {
     }
 
     float fart = 0.0f;
+
     if (fft_kjor(fart)) {
 
         /* for å sende array, bruk følgende kode:
@@ -65,6 +66,7 @@ void loop() {
             send_index = 0;
         }
         */
+       
         mqtt_send_fart_int(fart);
         mqtt_send_snitt(fft_buffer_snitt());
 
@@ -73,4 +75,5 @@ void loop() {
         mqtt_send_fart_int(fart);
         mqtt_send_snitt(fft_buffer_snitt());
     }
+
 }
