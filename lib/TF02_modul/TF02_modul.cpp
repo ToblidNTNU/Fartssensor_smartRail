@@ -24,17 +24,6 @@ void settMillimeterModus() {
   Serial.println("MM-modus aktivert");
 }
 
-void publiserAvstand() {
-  String payload = "[";
-  for (int i = 0; i < 25; i++) {
-    payload += String(avstand[i]);
-    if (i < 24) payload += ",";
-  }
-  payload += "]";
-  client.publish("esp32/avstand", payload.c_str());
-  Serial.println("Publisert: " + payload);
-}
-
 bool lesAvstand() {
   while (lidarSerial.available() && lidarSerial.peek() != 0x59) {
     lidarSerial.read();
