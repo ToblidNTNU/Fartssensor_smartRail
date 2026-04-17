@@ -48,7 +48,7 @@ static void samle_signal() {
         //Avlesing av lidar-data. Her kan vi vurdere å bruke styrke i stedenfor avstand.
         if (lidar_les(avstand, styrke)) {
             samples[i] = (float)avstand;
-            Serial.println("[fft_modul] Sample " + String(i) + ": Avstand = " + String(avstand) + " mm, Styrke = " + String(styrke));
+            //Serial.println("[fft_modul] Sample " + String(i) + ": Avstand = " + String(avstand) + " mm, Styrke = " + String(styrke));
         } else {
             samples[i] = 0.0f;   // ugyldig måling – sett til 0
         }
@@ -100,6 +100,13 @@ bool fft_kjor(float &fart_ut) {
 
     float frekvens = FFT->majorPeakFreq();
     float fart_kmh = frekvens * SVILL_AVSTAND * 3.6f;
+
+
+    //Debug-utskrift av FFT-resultater
+    Serial.printf("Fundamental Freq : %f Hz\t Mag: %f g\n", FFT->majorPeakFreq(), (FFT->majorPeak()/10000)*2/FFT_N);
+    for (int i=0; i< 10; i++) {
+        Serial.printf("%f Hz: %f\n", FFT->frequency(i),spectrum[i]);
+    }
 
     legg_i_buffer(fart_kmh);
     fart_ut = fart_kmh;

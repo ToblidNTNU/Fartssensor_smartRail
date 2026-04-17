@@ -39,6 +39,17 @@ void mqtt_send_fart_int(float verdi);
 void mqtt_send_snitt(float verdi);
 
 
+/**
+ * 
+ * Send en liste med avstandsmålinger til MQTT-topic som JSON-array.
+ * Eksempel: [120.0, 115.5, 130.2]
+ * @param avstand  Peker til array med avstandsmålinger
+ * @param antall    Antall målinger i arrayen
+ */
+void mqtt_send_avstand(float* avstand, int antall);
+
+
+
  
 // Flagg satt av innkommende kommandoer fra Node-RED.
 // volatile: hindrer kompilatoren fra å cache verdien, siden den kan endres naar som helst.

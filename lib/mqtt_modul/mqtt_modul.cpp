@@ -94,7 +94,6 @@ static void koble_til_mqtt() {
             Serial.println("tilkoblet.");
             mqttClient.subscribe(MQTT_TOPIC_SUB);
             mqttClient.subscribe(MQTT_TOPIC_CMD);
-  } 
         } else {
             Serial.print("Feil, rc=");
             Serial.print(mqttClient.state());
@@ -146,14 +145,15 @@ void mqtt_send_fart_int(float verdi) {
     Serial.println(payload);
 }
 
-void publiserAvstand() {
+void mqtt_send_avstand(float* avstand, int antall) {
+    if (!mqttClient.connected()) return;
   String payload = "[";
   for (int i = 0; i < 25; i++) {
     payload += String(avstand[i]);
     if (i < 24) payload += ",";
   }
   payload += "]";
-  client.publish("esp32/avstand", payload.c_str());
+  mqttClient.publish(MQTT_TOPIC_PUB_AVSTAND, payload.c_str());
   Serial.println("Publisert: " + payload);
 }
 

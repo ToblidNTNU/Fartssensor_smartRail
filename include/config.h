@@ -13,9 +13,10 @@
 #define MQTT_TOPIC_PUB_SNITT "nr1/snitt"
 #define MQTT_TOPIC_SUB  "rpi/broadcast"
 #define MQTT_TOPIC_CMD  "nr1/kommando"   // Node-RED sender "av" eller "paa" hit
+#define MQTT_TOPIC_PUB_AVSTAND "nr1/avstand"
 
 // ── Hardware ──────────────────────────────────────────────────────────────────
 #define SENSOR_PIN      0
 #define LED_PIN         2
-#define LIDAR_RX_PIN    32
-#define LIDAR_TX_PIN    33
+#define LIDAR_RX_PIN    32 //gul/grønn
+#define LIDAR_TX_PIN    33 //Hvit

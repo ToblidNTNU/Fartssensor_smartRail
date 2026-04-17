@@ -24,7 +24,7 @@ static void sett_millimeter_modus() {
     Serial.println("[lidar] Millimeter-modus aktivert");
 }
 
-static void tøm_buffer() {
+static void rydd_buffer() {
     while (lidarSerial.available()) lidarSerial.read();
 }
 
@@ -32,12 +32,12 @@ static void tøm_buffer() {
 void lidar_init() {
     lidarSerial.begin(LIDAR_BAUD, SERIAL_8N1, LIDAR_RX_PIN, LIDAR_TX_PIN);
     delay(500);
-    tøm_buffer();
+    rydd_buffer();
 
     sett_millimeter_modus();
     sett_max_frekvens();
     delay(200);
-    tøm_buffer();
+    rydd_buffer();
 
     Serial.println("[lidar] TF02-Pro klar (1000 Hz, 460800 baud, mm-modus)");
 }

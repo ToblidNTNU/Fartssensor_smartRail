@@ -2,6 +2,7 @@
 #include "config.h"
 #include "fft_modul.h"
 #include "mqtt_modul.h"
+#include "lidar_modul.h"
 
 /*
  * Hovedprogram for SmartRail. Leser fartverdier fra FFT-modulen og sender dem til MQTT.

@@ -3,10 +3,10 @@
 
 // ── Konfigurasjon ─────────────────────────────────────────────────────────────
 // Endre disse etter behov
-#define FFT_N           512     // Antall samples – må være potens av 2
+#define FFT_N           256     // Antall samples – må være potens av 2
 #define SAMPLEFREQ      500     // Samplingsfrekvens i Hz
 #define BUFFER_SIZE     10      // Antall målinger i glidende buffer
-#define MAG_GRENSE      0.000231f   // Minimumsverdi for å godta måling
+#define MAG_GRENSE      0.53f   // Minimumsverdi for å godta måling
 #define SVILL_AVSTAND   0.6f    // Avstand mellom sensor og vei i meter
 
 // ── Offentlig API ─────────────────────────────────────────────────────────────
