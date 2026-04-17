@@ -1,6 +1,7 @@
 #include "fft_modul.h"
 #include "config.h" 
 #include "ESP_fft.h"
+#include "lidar_modul.h" 
 
 /*
 *  fft_modul.cpp - Modul for å håndtere FFT-beregninger for fartsmåling
@@ -40,8 +41,22 @@ void fft_init() {
 // ── Hjelpefunksjon: samle inn samples fra sensor ──────────────────────────────
 static void samle_signal() {
     for (int i = 0; i < FFT_N; i++) {
-        // TODO: bytt ut med faktisk sensorlesing, f.eks. analogRead(SENSOR_PIN)
+
+        int avstand = 0;
+        int styrke  = 0;
+
+        //Avlesing av lidar-data. Her kan vi vurdere å bruke styrke i stedenfor avstand.
+        if (lidar_les(avstand, styrke)) {
+            samples[i] = (float)avstand;
+            Serial.println("[fft_modul] Sample " + String(i) + ": Avstand = " + String(avstand) + " mm, Styrke = " + String(styrke));
+        } else {
+            samples[i] = 0.0f;   // ugyldig måling – sett til 0
+        }
+
+        /* Knappesimulering:
         samples[i] = (digitalRead(SENSOR_PIN) ? 1.0f : -1.0f) * 5.0f;
+        */
+
         delayMicroseconds(1000000 / SAMPLEFREQ);
     }
 }

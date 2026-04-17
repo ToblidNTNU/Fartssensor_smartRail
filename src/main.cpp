@@ -37,6 +37,7 @@ void setup() {
 
     fft_init();
     mqtt_init();
+    lidar_init();
 
     Serial.println("Klar.");
 }
