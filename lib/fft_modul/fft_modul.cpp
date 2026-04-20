@@ -63,20 +63,13 @@ static void samle_signal() {
         // Vent kun gjenværende tid av intervallet
         long resterende = intervall_us - (etter_les - start);
         if (resterende > 0) delayMicroseconds(resterende);
-
-
-        /* for sjekking av timing
-        if (i < 3) {
-            Serial.printf("Sample %d: les=%lu µs, resterende=%ld µs, total=%lu µs\n",
-                i, etter_les - start, resterende, micros() - start);
-        }
-        */
+        
     }
-    //for sjekking av total timing
-    /*
+    // for sjekking av total timing
+    
     Serial.printf("Totalt: %lu ms for %d samples\n", 
         (micros() - total_start) / 1000, FFT_N);
-        */
+        
     
 }
 
@@ -97,7 +90,7 @@ bool fft_kjor(float &fart_ut) {
     rydd_buffer();
     samle_signal();
 
-    // Etter samle_signal(), før FFT->hammingWindow()
+    
     // Beregn gjennomsnitt og standardavvik
     float sum = 0.0f;
     for (int i = 0; i < FFT_N; i++) sum += samples[i];
@@ -124,34 +117,37 @@ bool fft_kjor(float &fart_ut) {
 
     float maxMag = (FFT->majorPeak() / 10000.0f) * 2.0f / FFT_N;
 
-    // Signal for svakt – sannsynligvis ingen bil
-    if (maxMag < MAG_GRENSE) {
-        legg_i_buffer(0.0f); // -> finne annen håndtering av ugyldige måleringer
-
-        /* Hvis vi vil returnere den målte farten i stedet for å ignorere målingen, kan vi gjøre det her:
-        float frekvens = FFT->majorPeakFreq();
-        float fart_kmh = frekvens * SVILL_AVSTAND * 3.6f;
-
-        legg_i_buffer(fart_kmh);
-        fart_ut = fart_kmh;
-        */
-        return false;
-    }
-
     float frekvens = FFT->majorPeakFreq();
     float fart_kmh = frekvens * SVILL_AVSTAND * 3.6f;
 
 
     //Debug-utskrift av FFT-resultater
-    /*
+    
     Serial.printf("Fundamental Freq : %f Hz\t Mag: %f g\n", FFT->majorPeakFreq(), (FFT->majorPeak()/10000)*2/FFT_N);
-    for (int i=0; i< 10; i++) {
+    for (int i=0; i< 20; i++) {
         Serial.printf("%f Hz: %f\n", FFT->frequency(i),spectrum[i]);
-    }*/
+    }
 
-    legg_i_buffer(fart_kmh);
-    fart_ut = fart_kmh;
-    return true;
+    // Beregn gjennomsnittsverdi av alle bins
+    float snitt_mag = 0.0f;
+    for (int i = 1; i < FFT_N / 2; i++) snitt_mag += spectrum[i];
+    snitt_mag /= (FFT_N / 2 - 1); // unntatt DC-komponenten
+
+    // Godta kun topper som er betydelig over snittet og over absolutt mag-grense
+    if (maxMag < snitt_mag * 3.0f || maxMag < MAG_GRENSE)
+    {
+        legg_i_buffer(0.0f);
+        return false;
+    }
+    else
+    { 
+
+        legg_i_buffer(fart_kmh);
+        fart_ut = fart_kmh;
+        return true;
+    }
+    
+
 }
 
 // ── Buffer-hjelpefunksjoner ───────────────────────────────────────────────────

@@ -10,11 +10,15 @@ static HardwareSerial lidarSerial(2);
 static uint8_t        uart_buf[9];
 
 // ── Interne hjelpefunksjoner ──────────────────────────────────────────────────
-static void sett_max_frekvens() {
-    uint8_t cmd[] = {0x5A, 0x06, 0x03, 0xE8, 0x03, 0x00};
+static void sett_frekvens(int hz) {
+
+    uint8_t lo = hz & 0xFF;
+    uint8_t hi = (hz >> 8) & 0xFF;
+    uint8_t cmd[] = {0x5A, 0x06, 0x03, lo, hi, 0x00};
+
     lidarSerial.write(cmd, sizeof(cmd));
     delay(100);
-    Serial.println("[lidar] Frekvens satt til 1000 Hz");
+    Serial.printf("[lidar] Frekvens satt til %d Hz", hz);
 }
 
 static void sett_millimeter_modus() {
@@ -33,13 +37,13 @@ void rydd_buffer() {
 }
 
 
-void lidar_init() {
+void lidar_init(int hz) {
     lidarSerial.begin(LIDAR_BAUD, SERIAL_8N1, LIDAR_RX_PIN, LIDAR_TX_PIN);
     delay(500);
     rydd_buffer();
 
     sett_millimeter_modus();
-    sett_max_frekvens();
+    sett_frekvens(hz);
     delay(200);
     rydd_buffer();
 

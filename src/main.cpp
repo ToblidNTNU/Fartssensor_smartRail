@@ -38,7 +38,7 @@ void setup() {
 
     fft_init();
     mqtt_init();
-    lidar_init();
+    lidar_init(100);
 
     Serial.println("Klar.");
 }
@@ -75,5 +75,6 @@ void loop() {
         mqtt_send_fart_int(fart);
         mqtt_send_snitt(fft_buffer_snitt());
     }
+        
 
 }

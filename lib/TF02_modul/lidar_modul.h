@@ -8,7 +8,7 @@
  * Setter opp seriell kommunikasjon, millimeter-modus og maks frekvens.
  * Kall én gang i setup().
  */
-void lidar_init();
+void lidar_init(int hz);
 
 /**
  * Les avstand fra sensoren.
