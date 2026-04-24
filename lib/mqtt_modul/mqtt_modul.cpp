@@ -123,9 +123,9 @@ void mqtt_send_fart_int(float verdi) {
 void mqtt_send_avstand(float* avstand, int antall) {
     if (!mqttClient.connected()) return;
   String payload = "[";
-  for (int i = 0; i < 25; i++) {
+  for (int i = 0; i < antall; i++) {
     payload += String(avstand[i]);
-    if (i < 24) payload += ",";
+    if (i < antall-1) payload += ",";
   }
   payload += "]";
   mqttClient.publish(MQTT_TOPIC_PUB_AVSTAND, payload.c_str());

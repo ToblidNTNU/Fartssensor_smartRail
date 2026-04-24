@@ -106,13 +106,21 @@ bool fft_kjor(float &fart_ut) {
     FFT->execute();
     FFT->complexToMagnitude();
 
-    float maxMag = (FFT->majorPeak() / 10000.0f) * 2.0f / FFT_N;
-    float frekvens = FFT->majorPeakFreq();
+
+    float maxMag = 0.0f;
+    int   maxBin = 0;
+    for (int i = 1; i < FFT_N / 2; i++) {
+        if (spectrum[i] > maxMag) {
+            maxMag = spectrum[i];
+            maxBin = i;
+        }
+    }
+    float frekvens = maxBin * ((float)SAMPLEFREQ / FFT_N);
     float fart_kmh = frekvens * SVILL_AVSTAND * 3.6f;
 
 
     //Debug-utskrift av FFT-resultater
-    Serial.printf("Fundamental Freq : %f Hz\t Mag: %f g\n", FFT->majorPeakFreq(), (FFT->majorPeak()/10000)*2/FFT_N);
+    Serial.printf("Fundamental Freq : %f Hz\t Mag: %f\n", frekvens, maxMag);
     for (int i=0; i< 20; i++) {
         Serial.printf("%f Hz: %f\n", FFT->frequency(i),spectrum[i]);
     }
@@ -126,7 +134,6 @@ bool fft_kjor(float &fart_ut) {
 
     } else {
         
-        legg_i_buffer(0.0f);
         fart_ut = 0.0f;
         return false;
     }
