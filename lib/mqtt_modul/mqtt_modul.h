@@ -15,14 +15,6 @@ void mqtt_init();
  */
 void mqtt_loop();
 
-/**
- * Send en liste med fartverdier til MQTT-topic som JSON-array.
- * Eksempel: [12.10,11.60,10.00]
- *
- * @param verdier   Peker til array med fartverdier
- * @param antall    Antall verdier i arrayen
- */
-void mqtt_send_fart_array(float* verdier, int antall);
 
 /**
  * Send en enkelt fartverdi til MQTT-topic.

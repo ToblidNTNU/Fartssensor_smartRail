@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-// ── Offentlig API ─────────────────────────────────────────────────────────────
+// ── Offentlige funksjoner ─────────────────────────────────────────────────────
 
 /**
  * Initialiser TF02-Pro LiDAR-sensor.
@@ -21,7 +21,6 @@ bool lidar_les(int &avstand_ut, int &styrke_ut);
 
 
 /**
- * 
- * 
+ * Rydd ut eventuelle rester i seriell buffer for LiDAR-sensoren. 
  */
 void rydd_buffer();

@@ -32,6 +32,7 @@ static void sett_millimeter_modus() {
 
 // ── Offentlige funksjoner ─────────────────────────────────────────────────────
 
+
 void rydd_buffer() {
     while (lidarSerial.available()) lidarSerial.read();
 }
@@ -47,7 +48,7 @@ void lidar_init(int hz) {
     delay(200);
     rydd_buffer();
 
-    Serial.println("[lidar] TF02-Pro klar (1000 Hz, 460800 baud, mm-modus)");
+    Serial.printf("[lidar] TF02-Pro klar (%d Hz, 460800 baud, mm-modus)", hz);
 }
 
 bool lidar_les(int &avstand_ut, int &styrke_ut) {
