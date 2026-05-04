@@ -48,7 +48,7 @@ void lidar_init(int hz) {
     delay(200);
     rydd_buffer();
 
-    Serial.printf("[lidar] TF02-Pro klar (%d Hz, 460800 baud, mm-modus)", hz);
+    Serial.printf("[lidar] TF02-Pro klar (%d Hz, 460800 baud, mm-modus)\n", hz);
 }
 
 bool lidar_les(int &avstand_ut, int &styrke_ut) {

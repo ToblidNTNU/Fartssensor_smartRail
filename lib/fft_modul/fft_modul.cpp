@@ -13,7 +13,10 @@ static float fart_buffer[BUFFER_SIZE];
 static int   buffer_index  = 0;
 static int   buffer_fyllt  = 0;   // Sporer hvor mange gyldige målinger som er lagt inn
 
-uint8_t peakSize = 3; // Hvor mye større må en topp være enn snittet for å godtas
+uint8_t peakSize = 2; // Hvor mye større må en topp være enn snittet for å godtas
+float MAG_GRENSE = 70.0f;
+uint16_t SAMPLEFREQ = 300;
+float SVILLE_TERSKEL = 15.0f; // Maks amplitude for å regne som sville i threshold-analyse
 
 static ESP_fft* FFT = nullptr;
 
@@ -26,6 +29,7 @@ void fft_init() {
 
 // ── Hjelpefunksjoner ──────────────────────────────
 static void samle_signal() {
+    memset(samples, 0, sizeof(samples));  // nullstill først
     unsigned long intervall_us = 1000000 / SAMPLEFREQ;
 
     for (int i = 0; i < FFT_N; i++) {
@@ -75,16 +79,16 @@ static void rens_signal(void) {
                 samples[i] = (samples[i] - snitt) / stddev;
             }
         }
-    
     FFT->hammingWindow();
+
 }
 
-static bool godkjent_signal(float maxMag) {
+static bool godkjent_signal(float maxMag, int min_bin, int max_bin) {
 
     // Beregn gjennomsnittsverdi av alle bins
     float snitt_mag = 0.0f;
-    for (int i = 1; i < FFT_N / 2; i++) snitt_mag += spectrum[i];
-    snitt_mag /= (FFT_N / 2 - 1); // unntatt DC-komponenten
+    for (int i = min_bin; i <= max_bin; i++) snitt_mag += spectrum[i];
+    snitt_mag /= (max_bin - min_bin + 1);
 
     Serial.println("[fft_modul] Snitt mag: " + String(snitt_mag) + ", Peak mag: " + String(maxMag));
     // Godta kun topper som er betydelig over snittet og over absolutt mag-grense
@@ -96,24 +100,24 @@ static bool godkjent_signal(float maxMag) {
     }
 }
 
-// ── Hoved-FFT-funksjon ────────────────────────────────────────────────────────
-bool fft_kjor(float &fart_ut) {
-    if (FFT == nullptr) {
-        Serial.println("[fft_modul] FEIL: fft_init() ikke kalt!");
-        return false;
-    }
+// fft eller flat-analyse
 
-    rydd_buffer();
-    samle_signal();
+float void fft_analyse(){
     rens_signal();
 
     FFT->execute();
     FFT->complexToMagnitude();
 
 
+    float min_hz = 1.0f / (3.6f * SVILL_AVSTAND);    // ~0.46 Hz = 1 km/h
+    float max_hz = 100.0f / (3.6f * SVILL_AVSTAND);   // ~46 Hz = 100 km/h
+
+    int min_bin = max(1, (int)(min_hz * FFT_N / SAMPLEFREQ));
+    int max_bin = (int)(max_hz * FFT_N / SAMPLEFREQ);
+
     float maxMag = 0.0f;
-    int   maxBin = 0;
-    for (int i = 1; i < FFT_N / 2; i++) {
+    int   maxBin = min_bin;
+    for (int i = min_bin; i <= max_bin; i++) {
         if (spectrum[i] > maxMag) {
             maxMag = spectrum[i];
             maxBin = i;
@@ -129,16 +133,73 @@ bool fft_kjor(float &fart_ut) {
     for (int i=0; i< 10; i++) {
         Serial.printf("%f Hz: %f\n", FFT->frequency(i),spectrum[i]);
     }
+
+
+    if (godkjent_signal(maxMag, min_bin, max_bin)) {
+        
+        legg_i_buffer(fart_kmh);
+        return fart_kmh;
+
+    } else {
+        return -1.0f; // Indikerer ugyldig måling
+    }
     
 
-    if (godkjent_signal(maxMag)) {
-        
+}
+
+float threshold_analyse() {
+    int antall_sviller = 0;
+    int vindu = SAMPLEFREQ / 10;  // 100ms vindu
+    bool forrige_var_sville = false;
+
+    for (int i = 0; i < FFT_N - vindu; i++) {
+        float maks = samples[i];
+        float min  = samples[i];
+        for (int j = i; j < i + vindu; j++) {
+            if (samples[j] > maks) maks = samples[j];
+            if (samples[j] < min)  min  = samples[j];
+        }
+
+        bool er_sville = (maks - min) < SVILLE_TERSKEL;
+
+        // Tell kun én gang per sville (stigende kant)
+        if (er_sville && !forrige_var_sville) antall_sviller++;
+        forrige_var_sville = er_sville;
+    }
+
+    float tid_sek = (float)FFT_N / SAMPLEFREQ;
+    return (antall_sviller * SVILL_AVSTAND / tid_sek) * 3.6f;
+}
+
+// ── Hoved-FFT-funksjon ────────────────────────────────────────────────────────
+bool fft_kjor(float &fart_ut) {
+    if (FFT == nullptr) {
+        Serial.println("[fft_modul] FEIL: fft_init() ikke kalt!");
+        return false;
+    }
+
+    rydd_buffer();
+    samle_signal();
+    
+    float fart_kmh = 0.0f;
+    switch (analyse_modus) {
+        case lidar_modus = 0:
+            fart_kmh = fft_analyse();
+            break;
+        case lidar_modus = 1:
+            fart_kmh = fft_analyse();
+            break;
+        case lidar_modus = 2:
+            fart_kmh = threshold_analyse();
+            break;
+    }
+
+
+    if (fart_kmh > 0.0f) {
         legg_i_buffer(fart_kmh);
         fart_ut = fart_kmh;
         return true;
-
     } else {
-        
         fart_ut = 0.0f;
         return false;
     }
