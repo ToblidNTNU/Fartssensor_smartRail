@@ -15,7 +15,6 @@ static int   buffer_fyllt  = 0;   // Sporer hvor mange gyldige målinger som er 
 
 uint8_t peakSize = 2; // Hvor mye større må en topp være enn snittet for å godtas
 float MAG_GRENSE = 70.0f;
-uint16_t SAMPLEFREQ = 300;
 float SVILLE_TERSKEL = 15.0f; // Maks amplitude for å regne som sville i threshold-analyse
 
 static ESP_fft* FFT = nullptr;
@@ -102,7 +101,7 @@ static bool godkjent_signal(float maxMag, int min_bin, int max_bin) {
 
 // fft eller flat-analyse
 
-float void fft_analyse(){
+float fft_analyse(){
     rens_signal();
 
     FFT->execute();
@@ -136,8 +135,6 @@ float void fft_analyse(){
 
 
     if (godkjent_signal(maxMag, min_bin, max_bin)) {
-        
-        legg_i_buffer(fart_kmh);
         return fart_kmh;
 
     } else {
@@ -182,14 +179,14 @@ bool fft_kjor(float &fart_ut) {
     samle_signal();
     
     float fart_kmh = 0.0f;
-    switch (analyse_modus) {
-        case lidar_modus = 0:
+    switch (lidar_modus) {
+        case 0: //avstand fft
             fart_kmh = fft_analyse();
             break;
-        case lidar_modus = 1:
+        case 1: //styrke
             fart_kmh = fft_analyse();
             break;
-        case lidar_modus = 2:
+        case 2: //flatt
             fart_kmh = threshold_analyse();
             break;
     }

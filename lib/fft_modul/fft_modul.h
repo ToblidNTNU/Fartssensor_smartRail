@@ -4,10 +4,13 @@
 // ── Konfigurasjon ─────────────────────────────────────────────────────────────
 // Endre disse etter behov
 #define FFT_N           1024     // Antall samples – må være potens av 2
-//#define SAMPLEFREQ      800      // Samplingsfrekvens i Hz
+#define SAMPLEFREQ      300      // Samplingsfrekvens i Hz
 #define BUFFER_SIZE     10      // Antall målinger i glidende buffer
-//#define MAG_GRENSE      70.0f// Minimumsverdi for å godta måling
 #define SVILL_AVSTAND   0.6f    // Avstand mellom sensor og vei i meter
+
+extern uint8_t peakSize;
+extern float MAG_GRENSE;
+extern float SVILLE_TERSKEL;
 
 // ── Offentlig API ─────────────────────────────────────────────────────────────
 

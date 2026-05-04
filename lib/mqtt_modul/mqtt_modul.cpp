@@ -2,6 +2,7 @@
 #include "config.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <fft_modul.h>
 
 
 // ── Interne objekter ──────────────────────────────────────────────────────────
@@ -77,6 +78,13 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
             Serial.println("Bytter til FLATT-modus");
             delay(500);
             lidar_modus = 2; // For FLATT-modus, vi kan bruke samme flagg som STYRKE, og håndtere det i lidar_modul
+        } else if (tekst.startsWith("MAG:")) {
+            //Da kan du sende "MAG:50" eller "PEAK:3" fra Node-RED for å justere parameterne 
+            MAG_GRENSE = tekst.substring(4).toFloat();
+            Serial.println("MAG_GRENSE satt til: " + String(MAG_GRENSE));
+        } else if (tekst.startsWith("PEAK:")) {
+            peakSize = tekst.substring(5).toInt();
+            Serial.println("peakSize satt til: " + String(peakSize));
         } else {
             Serial.println("Ukjent modus.");
         }
@@ -92,6 +100,7 @@ static void koble_til_mqtt() {
             Serial.println("tilkoblet.");
             mqttClient.subscribe(MQTT_TOPIC_SUB);
             mqttClient.subscribe(MQTT_TOPIC_CMD);
+            mqttClient.subscribe(MQTT_TOPIC_MODUS); 
         } else {
             Serial.print("Feil, rc=");
             Serial.print(mqttClient.state());
