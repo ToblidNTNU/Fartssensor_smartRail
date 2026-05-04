@@ -10,7 +10,7 @@ static PubSubClient mqttClient(wifiClient);
 
 // ── Flagg ─────────────────────────────────────────────────────────────────────
 volatile bool system_aktiv = true;
-volatile bool lidar_modus = true;
+volatile uint8_t lidar_modus = 0; // 0 = avstand, 1 = styrke, 2 = flatt (for testformål)
 
 
 // ── Interne hjelpefunksjoner ──────────────────────────────────────────────────
@@ -61,16 +61,24 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
             Serial.println("System resettes...");
             delay(500);
             ESP.restart();
+        }
+    }
+
+    if (String(topic) == MQTT_TOPIC_MODUS) {
+        if (tekst == "AVSTAND") {
+            Serial.println("Bytter til AVSTAND-modus");
+            delay(500);
+            lidar_modus = 0;
         } else if (tekst == "STYRKE") {
             Serial.println("Bytter til STYRKE-modus");
             delay(500);
-            lidar_modus = false;
-        } else if (tekst == "AVSTAND") {
-            Serial.println("Bytter til AVSTAND-modus");
+            lidar_modus = 1;
+        } else if (tekst == "FLATT") {
+            Serial.println("Bytter til FLATT-modus");
             delay(500);
-            lidar_modus = true;
+            lidar_modus = 2; // For FLATT-modus, vi kan bruke samme flagg som STYRKE, og håndtere det i lidar_modul
         } else {
-            Serial.println("Ukjent kommando.");
+            Serial.println("Ukjent modus.");
         }
     }
 }
@@ -105,6 +113,7 @@ void mqtt_init() {
 
 void mqtt_loop() {
     if (!mqttClient.connected()) {
+        Serial.println("MQTT frakoblet. Prøver å koble til igjen...");
         koble_til_mqtt();
     }
     mqttClient.loop();
@@ -120,18 +129,6 @@ void mqtt_send_fart_int(float verdi) {
     Serial.println(payload);
 }
 
-void mqtt_send_avstand(float* avstand, int antall) {
-    if (!mqttClient.connected()) return;
-  String payload = "[";
-  for (int i = 0; i < antall; i++) {
-    payload += String(avstand[i]);
-    if (i < antall-1) payload += ",";
-  }
-  payload += "]";
-  mqttClient.publish(MQTT_TOPIC_PUB_AVSTAND, payload.c_str());
-  Serial.println("Publisert: " + payload);
-}
-
 void mqtt_send_snitt(float verdi) {
     if (!mqttClient.connected()) return;
 
@@ -139,5 +136,15 @@ void mqtt_send_snitt(float verdi) {
 
     mqttClient.publish(MQTT_TOPIC_PUB_SNITT, payload.c_str());
     Serial.print("Sendt gjennomsnittsfart: ");
+    Serial.println(payload);
+}
+
+void mqtt_send_status() {
+    if (!mqttClient.connected()) return;
+
+    String payload = String(lidar_modus, 2);
+
+    mqttClient.publish(MQTT_TOPIC_PUB_STATUS, payload.c_str());
+    Serial.print("Sendt status: ");
     Serial.println(payload);
 }

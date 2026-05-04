@@ -5,12 +5,15 @@
 #include "mqtt_modul.h"
 
 
+
 // ── Interne buffere/variabler ───────────────────────────────
 static float samples[FFT_N];
 static float spectrum[FFT_N];
 static float fart_buffer[BUFFER_SIZE];
 static int   buffer_index  = 0;
 static int   buffer_fyllt  = 0;   // Sporer hvor mange gyldige målinger som er lagt inn
+
+uint8_t peakSize = 3; // Hvor mye større må en topp være enn snittet for å godtas
 
 static ESP_fft* FFT = nullptr;
 
@@ -83,8 +86,9 @@ static bool godkjent_signal(float maxMag) {
     for (int i = 1; i < FFT_N / 2; i++) snitt_mag += spectrum[i];
     snitt_mag /= (FFT_N / 2 - 1); // unntatt DC-komponenten
 
+    Serial.println("[fft_modul] Snitt mag: " + String(snitt_mag) + ", Peak mag: " + String(maxMag));
     // Godta kun topper som er betydelig over snittet og over absolutt mag-grense
-    if (maxMag > snitt_mag * 3.0f && maxMag > MAG_GRENSE)
+    if (maxMag > snitt_mag * peakSize && maxMag > MAG_GRENSE)
     {
         return true;
     } else { 
@@ -120,11 +124,12 @@ bool fft_kjor(float &fart_ut) {
 
 
     //Debug-utskrift av FFT-resultater
+    
     Serial.printf("Fundamental Freq : %f Hz\t Mag: %f\n", frekvens, maxMag);
-    for (int i=0; i< 20; i++) {
+    for (int i=0; i< 10; i++) {
         Serial.printf("%f Hz: %f\n", FFT->frequency(i),spectrum[i]);
     }
-
+    
 
     if (godkjent_signal(maxMag)) {
         

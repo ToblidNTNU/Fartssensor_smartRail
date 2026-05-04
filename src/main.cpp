@@ -11,7 +11,7 @@ void setup() {
 
     fft_init(); // Initialiser FFT-modulen
     mqtt_init(); // Initialiser MQTT-modulen og koble til WiFi og MQTT-broker
-    lidar_init(100); // Initialiser LIDAR-modulen med ønsket oppdateringsfrekvens (f.eks. 100 Hz)
+    lidar_init(800); // Initialiser LIDAR-modulen med ønsket oppdateringsfrekvens (f.eks. 100 Hz)
 
     Serial.println("Klar.");
 }
@@ -21,13 +21,14 @@ void loop() {
 
     // Hvis systemet er deaktivert, gjør ingenting og vent litt før neste sjekk
     if (!system_aktiv) {
-    Serial.println(". ");
+    Serial.print(". ");
     delay(1000);
     return;
     }
 
     float fart = 0.0f; 
 
+    Serial.println("Starter måling...");
     // Hent fartverdier fra FFT-modulen og send til MQTT
     if (fft_kjor(fart)) {
        
@@ -38,6 +39,7 @@ void loop() {
         mqtt_send_fart_int(fart);
         mqtt_send_snitt(fft_buffer_snitt());
     }
-        
+    Serial.println("Måling ferdig\n\n");
+    mqtt_send_status(); // Send status (f.eks. modus) til MQTT
 
 }

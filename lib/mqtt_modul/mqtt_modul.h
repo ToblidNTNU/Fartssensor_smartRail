@@ -41,9 +41,15 @@ void mqtt_send_snitt(float verdi);
 void mqtt_send_avstand(float* avstand, int antall);
 
 
+/**
+ * 
+ */
+void mqtt_send_status();
+
+
 
  
 // Flagg satt av innkommende kommandoer fra Node-RED.
 // volatile: hindrer kompilatoren fra å cache verdien, siden den kan endres naar som helst.
 extern volatile bool system_aktiv;
-extern volatile bool lidar_modus;
+extern volatile uint8_t lidar_modus;
