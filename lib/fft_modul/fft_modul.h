@@ -39,3 +39,7 @@ float fft_buffer_snitt();
  * Nullstill fart-bufferen.
  */
 void fft_buffer_nullstill();
+
+
+// fft_modul.h
+void fft_sett_parametere(float mag, uint8_t peak, float terskel);

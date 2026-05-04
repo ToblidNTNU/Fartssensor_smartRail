@@ -33,3 +33,7 @@
 #define LED_PIN         2
 #define LIDAR_RX_PIN    32 //gul/grønn
 #define LIDAR_TX_PIN    33 //Hvit
+
+// ── Systemstatus ─────────────────────────────────────────────────────────────
+extern volatile bool system_aktiv;
+extern volatile uint8_t lidar_modus; // 0 = avstand, 1 = styrke, 2 = flatt (for testformål)

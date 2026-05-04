@@ -2,8 +2,6 @@
 #include "config.h" 
 #include "ESP_fft.h"
 #include "lidar_modul.h" 
-#include "mqtt_modul.h"
-
 
 
 // ── Interne buffere/variabler ───────────────────────────────
@@ -27,6 +25,9 @@ void fft_init() {
 }
 
 // ── Hjelpefunksjoner ──────────────────────────────
+
+
+
 static void samle_signal() {
     memset(samples, 0, sizeof(samples));  // nullstill først
     unsigned long intervall_us = 1000000 / SAMPLEFREQ;
@@ -38,7 +39,7 @@ static void samle_signal() {
         int styrke  = 0;
 
         if (lidar_les(avstand, styrke)) {
-            if (lidar_modus) samples[i] = (float)avstand;
+            if (lidar_modus == 0) samples[i] = (float)avstand;
             else samples[i] = (float)styrke;
         } else {
             samples[i] = 0.0f;
@@ -215,4 +216,12 @@ void fft_buffer_nullstill() {
     for (int i = 0; i < BUFFER_SIZE; i++) fart_buffer[i] = 0.0f;
     buffer_index = 0;
     buffer_fyllt = 0;
+}
+
+//annet
+
+void fft_sett_parametere(float mag, uint8_t peak, float terskel) {
+    MAG_GRENSE = mag;
+    peakSize = peak;
+    SVILLE_TERSKEL = terskel;
 }

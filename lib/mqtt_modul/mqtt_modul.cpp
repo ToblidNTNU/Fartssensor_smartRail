@@ -9,11 +9,6 @@
 static WiFiClient   wifiClient; 
 static PubSubClient mqttClient(wifiClient);
 
-// ── Flagg ─────────────────────────────────────────────────────────────────────
-volatile bool system_aktiv = true;
-volatile uint8_t lidar_modus = 0; // 0 = avstand, 1 = styrke, 2 = flatt (for testformål)
-
-
 // ── Interne hjelpefunksjoner ──────────────────────────────────────────────────
 static void blink_led(int ganger, int varighet_ms) {
     for (int i = 0; i < ganger; i++) {
@@ -80,10 +75,10 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
             lidar_modus = 2; // For FLATT-modus, vi kan bruke samme flagg som STYRKE, og håndtere det i lidar_modul
         } else if (tekst.startsWith("MAG:")) {
             //Da kan du sende "MAG:50" eller "PEAK:3" fra Node-RED for å justere parameterne 
-            MAG_GRENSE = tekst.substring(4).toFloat();
+            fft_sett_parametere(tekst.substring(4).toFloat(), peakSize, SVILLE_TERSKEL);
             Serial.println("MAG_GRENSE satt til: " + String(MAG_GRENSE));
         } else if (tekst.startsWith("PEAK:")) {
-            peakSize = tekst.substring(5).toInt();
+            fft_sett_parametere(MAG_GRENSE, tekst.substring(5).toInt(), SVILLE_TERSKEL);
             Serial.println("peakSize satt til: " + String(peakSize));
         } else {
             Serial.println("Ukjent modus.");
