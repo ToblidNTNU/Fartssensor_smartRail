@@ -39,7 +39,8 @@ void loop() {
         mqtt_send_fart_int(fart);
         mqtt_send_snitt(fft_buffer_snitt());
     }
-    Serial.println("Måling ferdig\n\n");
+    Serial.println("Måling ferdig");
     mqtt_send_status(); // Send status (f.eks. modus) til MQTT
+    Serial.println("\n\n");
 
 }

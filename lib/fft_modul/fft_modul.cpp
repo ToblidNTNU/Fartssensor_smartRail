@@ -13,7 +13,7 @@ static int   buffer_fyllt  = 0;   // Sporer hvor mange gyldige målinger som er 
 
 float PEAK_SIZE = 2.0f; // Hvor mye større må en topp være enn snittet for å godtas
 float MAG_GRENSE = 70.0f;
-float SVILLE_TERSKEL = 15.0f; // Maks amplitude for å regne som sville i threshold-analyse
+float SVILLE_TERSKEL = 40.0f; // Maks amplitude for å regne som sville i threshold-analyse
 
 static ESP_fft* FFT = nullptr;
 
@@ -86,12 +86,12 @@ float fft_analyse(){
 
 
     //Debug-utskrift av FFT-resultater
-    
+    /*
     Serial.printf("Fundamental Freq : %f Hz\t Mag: %f\n", frekvens, maxMag);
     for (int i=0; i< 10; i++) {
         Serial.printf("%f Hz: %f\n", FFT->frequency(i),spectrum[i]);
     }
-
+    */
 
     if (godkjent_signal(maxMag, min_bin, max_bin)) {
         return fart_kmh;
@@ -151,14 +151,12 @@ float threshold_analyse() {
     bool forrige_var_sville = false;
 
     for (int i = 0; i < FFT_N - vindu; i++) {
-        float maks = samples[i];
-        float min  = samples[i];
-        for (int j = i; j < i + vindu; j++) {
-            if (samples[j] > maks) maks = samples[j];
-            if (samples[j] < min)  min  = samples[j];
+        float total_variasjon = 0.0f;
+        for (int j = i+1; j < i + vindu; j++) {
+            total_variasjon += abs(samples[j] - samples[j-1]);
         }
 
-        bool er_sville = (maks - min) < SVILLE_TERSKEL;
+        bool er_sville = total_variasjon < SVILLE_TERSKEL;
 
         // Tell kun én gang per sville (stigende kant)
         if (er_sville && !forrige_var_sville) antall_sviller++;

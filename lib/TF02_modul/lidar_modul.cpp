@@ -18,14 +18,12 @@ static void sett_frekvens(int hz) {
 
     lidarSerial.write(cmd, sizeof(cmd));
     delay(100);
-    Serial.printf("[lidar] Frekvens satt til %d Hz", hz);
 }
 
 static void sett_millimeter_modus() {
     uint8_t cmd[] = {0x5A, 0x05, 0x05, 0x06, 0x6A};
     lidarSerial.write(cmd, sizeof(cmd));
     delay(100);
-    Serial.println("[lidar] Millimeter-modus aktivert");
 }
 
 
