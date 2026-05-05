@@ -8,6 +8,7 @@
 #define MQTT_SERVER     "192.168.137.119"
 #define MQTT_PORT       1884
 #define MQTT_CLIENT_ID  "ESP32_lidar"
+//__ MQTT Topics ───────────────────────────────────────────────────────────────
 #define MQTT_TOPIC_PUB_ARRAY  "nr1/array"
 #define MQTT_TOPIC_PUB_FART "nr1/fart"
 #define MQTT_TOPIC_PUB_SNITT "nr1/snitt"
@@ -16,16 +17,9 @@
 #define MQTT_TOPIC_PUB_STATUS "nr1/status"
 
 #define MQTT_TOPIC_SUB  "rpi/broadcast"
-
-#define MQTT_TOPIC_CMD  "nr1/tilstand"   // Node-RED sender "av" eller "paa" hit
-// ON; OFF; RESET;
-
-#define MQTT_TOPIC_MODUS "nr1/modus"    // Node-RED sender "normal" eller "test" hit
-//STYRKE; AVSTAND; FLATT
-
-#define MQTT_TOPIC_TUNING "nr1/tuning"  // Node-RED sender JSON med tuning-parametre hit
-// {"peakSize":3.0}
-
+#define MQTT_TOPIC_SUB_CMD  "nr1/tilstand"   // ON; OFF; RESET;
+#define MQTT_TOPIC_SUB_MODUS "nr1/modus"    // STYRKE; AVSTAND; FLATT
+#define MQTT_TOPIC_SUB_TUNING "nr1/tuning"  // Node-RED sender JSON med tuning-parametre hit {"PEAK:3.0"}
 
 
 // ── Hardware ──────────────────────────────────────────────────────────────────

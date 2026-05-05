@@ -46,7 +46,7 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
     Serial.print(": ");
     Serial.println(tekst);
 
-    if (String(topic) == MQTT_TOPIC_CMD) {
+    if (String(topic) == MQTT_TOPIC_SUB_CMD) {
         if (tekst == "OFF") {
             Serial.println("System deaktivert.");
             system_aktiv = false;
@@ -60,7 +60,7 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
         }
     }
 
-    if (String(topic) == MQTT_TOPIC_MODUS) {
+    if (String(topic) == MQTT_TOPIC_SUB_MODUS) {
         if (tekst == "AVSTAND") {
             Serial.println("Bytter til AVSTAND-modus");
             delay(500);
@@ -72,14 +72,23 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
         } else if (tekst == "FLATT") {
             Serial.println("Bytter til FLATT-modus");
             delay(500);
-            lidar_modus = 2; // For FLATT-modus, vi kan bruke samme flagg som STYRKE, og håndtere det i lidar_modul
-        } else if (tekst.startsWith("MAG:")) {
+            lidar_modus = 2; 
+        } else {
+            Serial.println("Ukjent modus.");
+        }
+    }
+
+    if (String(topic) == MQTT_TOPIC_SUB_TUNING) {
+        if (tekst.startsWith("MAG:")) {
             //Da kan du sende "MAG:50" eller "PEAK:3" fra Node-RED for å justere parameterne 
-            fft_sett_parametere(tekst.substring(4).toFloat(), peakSize, SVILLE_TERSKEL);
+            fft_sett_parametere(tekst.substring(4).toFloat(), PEAK_SIZE, SVILLE_TERSKEL);
             Serial.println("MAG_GRENSE satt til: " + String(MAG_GRENSE));
         } else if (tekst.startsWith("PEAK:")) {
-            fft_sett_parametere(MAG_GRENSE, tekst.substring(5).toInt(), SVILLE_TERSKEL);
-            Serial.println("peakSize satt til: " + String(peakSize));
+            fft_sett_parametere(MAG_GRENSE, tekst.substring(5).toFloat(), SVILLE_TERSKEL);
+            Serial.println("PEAK_SIZE satt til: " + String(PEAK_SIZE));
+        } else if (tekst.startsWith("SVILLE:")) {
+            fft_sett_parametere(MAG_GRENSE, PEAK_SIZE, tekst.substring(7).toFloat());
+            Serial.println("SVILLE_TERSKEL satt til: " + String(SVILLE_TERSKEL));
         } else {
             Serial.println("Ukjent modus.");
         }
@@ -94,8 +103,9 @@ static void koble_til_mqtt() {
         if (mqttClient.connect(MQTT_CLIENT_ID)) {
             Serial.println("tilkoblet.");
             mqttClient.subscribe(MQTT_TOPIC_SUB);
-            mqttClient.subscribe(MQTT_TOPIC_CMD);
-            mqttClient.subscribe(MQTT_TOPIC_MODUS); 
+            mqttClient.subscribe(MQTT_TOPIC_SUB_CMD);
+            mqttClient.subscribe(MQTT_TOPIC_SUB_MODUS); 
+            mqttClient.subscribe(MQTT_TOPIC_SUB_TUNING);
         } else {
             Serial.print("Feil, rc=");
             Serial.print(mqttClient.state());

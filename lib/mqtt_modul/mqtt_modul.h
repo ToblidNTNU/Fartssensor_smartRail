@@ -38,8 +38,3 @@ void mqtt_send_status();
 
 
 
- 
-// Flagg satt av innkommende kommandoer fra Node-RED.
-// volatile: hindrer kompilatoren fra å cache verdien, siden den kan endres naar som helst.
-extern volatile bool system_aktiv;
-extern volatile uint8_t lidar_modus;

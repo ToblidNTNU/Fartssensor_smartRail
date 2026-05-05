@@ -11,7 +11,7 @@ void setup() {
 
     fft_init(); // Initialiser FFT-modulen
     mqtt_init(); // Initialiser MQTT-modulen og koble til WiFi og MQTT-broker
-    lidar_init(300); // Initialiser LIDAR-modulen med ønsket oppdateringsfrekvens (f.eks. 100 Hz)
+    lidar_init(500); // Initialiser LIDAR-modulen med ønsket oppdateringsfrekvens (f.eks. 100 Hz)
 
     Serial.println("Klar.");
 }

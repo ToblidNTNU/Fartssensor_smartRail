@@ -2,13 +2,16 @@
 #include <Arduino.h>
 
 // ── Konfigurasjon ─────────────────────────────────────────────────────────────
-// Endre disse etter behov
-#define FFT_N           1024     // Antall samples – må være potens av 2
-#define SAMPLEFREQ      300      // Samplingsfrekvens i Hz
+// ── Parametervalg ──────────────────────────────────────────────────────────
+// SAMPLEFREQ > 10*v/0.6 → 500 Hz dekker 0-100 km/h (Nyquist med god margin)
+// FFT_N/SAMPLEFREQ > 6/v(m/s) → 1024/500=2.05s dekker v > ~10 km/h (>10 sviller)
+// For v < 10 km/h reduseres antall sviller, men frekvensdeteksjon er fortsatt mulig
+#define FFT_N           1024     // Antall samples – må være potens av 2 - N/F må være større enn 6/v
+#define SAMPLEFREQ      500      // Samplingsfrekvens i Hz - må være større enn 10*v/0.6
 #define BUFFER_SIZE     10      // Antall målinger i glidende buffer
 #define SVILL_AVSTAND   0.6f    // Avstand mellom sensor og vei i meter
 
-extern uint8_t peakSize;
+extern float PEAK_SIZE;
 extern float MAG_GRENSE;
 extern float SVILLE_TERSKEL;
 

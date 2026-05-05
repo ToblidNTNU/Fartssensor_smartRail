@@ -11,7 +11,7 @@ static float fart_buffer[BUFFER_SIZE];
 static int   buffer_index  = 0;
 static int   buffer_fyllt  = 0;   // Sporer hvor mange gyldige målinger som er lagt inn
 
-uint8_t peakSize = 2; // Hvor mye større må en topp være enn snittet for å godtas
+float PEAK_SIZE = 2.0f; // Hvor mye større må en topp være enn snittet for å godtas
 float MAG_GRENSE = 70.0f;
 float SVILLE_TERSKEL = 15.0f; // Maks amplitude for å regne som sville i threshold-analyse
 
@@ -25,8 +25,6 @@ void fft_init() {
 }
 
 // ── Hjelpefunksjoner ──────────────────────────────
-
-
 
 static void samle_signal() {
     memset(samples, 0, sizeof(samples));  // nullstill først
@@ -59,48 +57,8 @@ static void legg_i_buffer(float verdi) {
     if (buffer_fyllt < BUFFER_SIZE) buffer_fyllt++;
 }
 
-static void rens_signal(void) {
 
-    // Beregn gjennomsnitt og standardavvik for normalisering
-    float sum = 0.0f;
-        for (int i = 0; i < FFT_N; i++) sum += samples[i];
-        float snitt = sum / FFT_N;
-
-        float varians = 0.0f;
-        for (int i = 0; i < FFT_N; i++) {
-            float diff = samples[i] - snitt;
-            varians += diff * diff;
-        }
-        float stddev = sqrt(varians / FFT_N);
-
-        // Normaliser
-        if (stddev > 0.0f) {
-            for (int i = 0; i < FFT_N; i++) {
-                samples[i] = (samples[i] - snitt) / stddev;
-            }
-        }
-    FFT->hammingWindow();
-
-}
-
-static bool godkjent_signal(float maxMag, int min_bin, int max_bin) {
-
-    // Beregn gjennomsnittsverdi av alle bins
-    float snitt_mag = 0.0f;
-    for (int i = min_bin; i <= max_bin; i++) snitt_mag += spectrum[i];
-    snitt_mag /= (max_bin - min_bin + 1);
-
-    Serial.println("[fft_modul] Snitt mag: " + String(snitt_mag) + ", Peak mag: " + String(maxMag));
-    // Godta kun topper som er betydelig over snittet og over absolutt mag-grense
-    if (maxMag > snitt_mag * peakSize && maxMag > MAG_GRENSE)
-    {
-        return true;
-    } else { 
-        return false;
-    }
-}
-
-// fft eller flat-analyse
+//______fft-analyse____________________
 
 float fft_analyse(){
     rens_signal();
@@ -141,13 +99,55 @@ float fft_analyse(){
     } else {
         return -1.0f; // Indikerer ugyldig måling
     }
-    
+}
+
+
+static void rens_signal(void) {
+
+    // Beregn gjennomsnitt og standardavvik for normalisering
+    float sum = 0.0f;
+        for (int i = 0; i < FFT_N; i++) sum += samples[i];
+        float snitt = sum / FFT_N;
+
+        float varians = 0.0f;
+        for (int i = 0; i < FFT_N; i++) {
+            float diff = samples[i] - snitt;
+            varians += diff * diff;
+        }
+        float stddev = sqrt(varians / FFT_N);
+
+        // Normaliser
+        if (stddev > 0.0f) {
+            for (int i = 0; i < FFT_N; i++) {
+                samples[i] = (samples[i] - snitt) / stddev;
+            }
+        }
+    FFT->hammingWindow();
 
 }
 
+static bool godkjent_signal(float maxMag, int min_bin, int max_bin) {
+
+    // Beregn gjennomsnittsverdi av alle bins
+    float snitt_mag = 0.0f;
+    for (int i = min_bin; i <= max_bin; i++) snitt_mag += spectrum[i];
+    snitt_mag /= (max_bin - min_bin + 1);
+
+    Serial.println("[fft_modul] Snitt mag: " + String(snitt_mag) + ", Peak mag: " + String(maxMag));
+    // Godta kun topper som er betydelig over snittet og over absolutt mag-grense
+    if (maxMag > snitt_mag * PEAK_SIZE && maxMag > MAG_GRENSE)
+    {
+        return true;
+    } else { 
+        return false;
+    }
+}
+
+
+//______threshold-analyse____________________
 float threshold_analyse() {
     int antall_sviller = 0;
-    int vindu = SAMPLEFREQ / 10;  // 100ms vindu
+    int vindu = SAMPLEFREQ / 100; // 10 ms vindu, juster etter behov
     bool forrige_var_sville = false;
 
     for (int i = 0; i < FFT_N - vindu; i++) {
@@ -220,8 +220,8 @@ void fft_buffer_nullstill() {
 
 //annet
 
-void fft_sett_parametere(float mag, uint8_t peak, float terskel) {
+void fft_sett_parametere(float mag, float peak, float terskel) {
     MAG_GRENSE = mag;
-    peakSize = peak;
+    PEAK_SIZE = peak;
     SVILLE_TERSKEL = terskel;
 }
