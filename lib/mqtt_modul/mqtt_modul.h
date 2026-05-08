@@ -32,9 +32,13 @@ void mqtt_send_snitt(float verdi);
 
 
 /**
- * 
+ * Send statusinformasjon til MQTT-topic.
  */
 void mqtt_send_status();
 
+/**
+ * Send variabler (peak, mag, terskel) til MQTT-topic for debugging/tuning.
+ */
+void mqtt_send_variabler(float peak, float mag, float terskel);
 
-
+void mqtt_send_debug(float snitt, float peak);

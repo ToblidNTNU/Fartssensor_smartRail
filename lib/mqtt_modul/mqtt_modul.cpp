@@ -2,8 +2,12 @@
 #include "config.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <fft_modul.h>
+#include "fft_modul.h"
 
+// ── externe variabler ─────────────────────────────────────────────────────────
+volatile bool system_aktiv = true;
+volatile uint8_t lidar_modus = 0;
+volatile bool motatt_melding_flagg = false;
 
 // ── Interne objekter ──────────────────────────────────────────────────────────
 static WiFiClient   wifiClient; 
@@ -46,7 +50,10 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
     Serial.print(": ");
     Serial.println(tekst);
 
+    motatt_melding_flagg = true;
+
     if (String(topic) == MQTT_TOPIC_SUB_CMD) {
+        
         if (tekst == "OFF") {
             Serial.println("System deaktivert.");
             system_aktiv = false;
@@ -86,8 +93,8 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
         } else if (tekst.startsWith("PEAK:")) {
             fft_sett_parametere(MAG_GRENSE, tekst.substring(5).toFloat(), SVILLE_TERSKEL);
             Serial.println("PEAK_SIZE satt til: " + String(PEAK_SIZE));
-        } else if (tekst.startsWith("SVILLE:")) {
-            fft_sett_parametere(MAG_GRENSE, PEAK_SIZE, tekst.substring(7).toFloat());
+        } else if (tekst.startsWith("TERSKEL:")) {
+            fft_sett_parametere(MAG_GRENSE, PEAK_SIZE, tekst.substring(8).toFloat());
             Serial.println("SVILLE_TERSKEL satt til: " + String(SVILLE_TERSKEL));
         } else {
             Serial.println("Ukjent modus.");
@@ -156,9 +163,26 @@ void mqtt_send_snitt(float verdi) {
 void mqtt_send_status() {
     if (!mqttClient.connected()) return;
 
-    String payload = String(lidar_modus, 2);
+    String payload = String(lidar_modus == 0 ? "AVSTAND" : (lidar_modus == 1 ? "STYRKE" : "FLATT")) + ", " + (system_aktiv ? "AKTIV" : "DEAKTIVERT");
+
 
     mqttClient.publish(MQTT_TOPIC_PUB_STATUS, payload.c_str());
     Serial.print("Sendt status: ");
     Serial.println(payload);
+}
+
+void mqtt_send_variabler(float peak, float mag, float terskel) {
+    if (!mqttClient.connected()) return;
+
+    String payload = String("Peak: ") + String(peak) + ", Mag: " + String(mag) + ", Terskel: " + String(terskel);
+
+    mqttClient.publish(MQTT_TOPIC_PUB_VARIABLER, payload.c_str());
+    Serial.print("Sendt variabler: ");
+    Serial.println(payload);
+}
+
+void mqtt_send_debug(float snitt, float peak) {
+    if (!mqttClient.connected()) return;
+    String payload = String("Snitt: ") + String(snitt, 2) + ", Peak: " + String(peak, 2);
+    mqttClient.publish(MQTT_TOPIC_PUB_FFT, payload.c_str());
 }

@@ -15,6 +15,8 @@ extern float PEAK_SIZE;
 extern float MAG_GRENSE;
 extern float SVILLE_TERSKEL;
 
+extern void (*fft_debug_callback)(float snitt, float peak);
+
 // ── Offentlig API ─────────────────────────────────────────────────────────────
 
 /**
@@ -45,4 +47,6 @@ void fft_buffer_nullstill();
 
 
 // fft_modul.h
-void fft_sett_parametere(float mag, uint8_t peak, float terskel);
+void fft_sett_parametere(float mag, float peak, float terskel);
+
+

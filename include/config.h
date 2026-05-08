@@ -1,5 +1,6 @@
 #pragma once
 
+
 // ── WiFi ──────────────────────────────────────────────────────────────────────
 #define WIFI_SSID       "KINE"
 #define WIFI_PASSWORD   "Lars1111"
@@ -15,6 +16,8 @@
 #define MQTT_TOPIC_PUB_AVSTAND "nr1/avstand"
 #define MQTT_TOPIC_PUB_STYRKE "nr1/styrke"
 #define MQTT_TOPIC_PUB_STATUS "nr1/status"
+#define MQTT_TOPIC_PUB_VARIABLER  "nr1/variabler"
+#define MQTT_TOPIC_PUB_FFT "nr1/fft"
 
 #define MQTT_TOPIC_SUB  "rpi/broadcast"
 #define MQTT_TOPIC_SUB_CMD  "nr1/tilstand"   // ON; OFF; RESET;
@@ -27,7 +30,3 @@
 #define LED_PIN         2
 #define LIDAR_RX_PIN    32 //gul/grønn
 #define LIDAR_TX_PIN    33 //Hvit
-
-// ── Systemstatus ─────────────────────────────────────────────────────────────
-extern volatile bool system_aktiv;
-extern volatile uint8_t lidar_modus; // 0 = avstand, 1 = styrke, 2 = flatt (for testformål)
