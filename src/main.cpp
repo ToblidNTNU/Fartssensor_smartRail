@@ -29,10 +29,10 @@ void setup() {
 void loop() {
     mqtt_loop(); // Håndter MQTT-kommunikasjon kontinuerlig
 
-    if ((counter >= 10) || motatt_melding_flagg) {
+    if ((counter >= 10) || mottatt_melding_flagg) {
         mqtt_send_status();
         mqtt_send_variabler(PEAK_SIZE, MAG_GRENSE, SVILLE_TERSKEL);
-        motatt_melding_flagg = false;
+        mottatt_melding_flagg = false;
         counter = 0;
     }
     counter++;

@@ -41,8 +41,8 @@ static void samle_signal() {
         int styrke  = 0;
 
         if (lidar_les(avstand, styrke)) {
-            if (lidar_modus == 0) samples[i] = (float)avstand;
-            else samples[i] = (float)styrke;
+            if (lidar_modus == 1) samples[i] = (float)styrke;
+            else samples[i] = (float)avstand;
         } else {
             samples[i] = 0.0f;
         }

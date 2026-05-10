@@ -3,3 +3,4 @@
 
 volatile bool system_aktiv = true;
 volatile uint8_t lidar_modus = 0;
+volatile bool mottatt_melding_flagg = false;

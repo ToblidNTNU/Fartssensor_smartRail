@@ -3,11 +3,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "fft_modul.h"
-
-// ── externe variabler ─────────────────────────────────────────────────────────
-volatile bool system_aktiv = true;
-volatile uint8_t lidar_modus = 0;
-volatile bool motatt_melding_flagg = false;
+#include "state.h"
 
 // ── Interne objekter ──────────────────────────────────────────────────────────
 static WiFiClient   wifiClient; 
@@ -50,7 +46,7 @@ static void mottatt_melding(char* topic, byte* melding, unsigned int lengde) {
     Serial.print(": ");
     Serial.println(tekst);
 
-    motatt_melding_flagg = true;
+    mottatt_melding_flagg = true;
 
     if (String(topic) == MQTT_TOPIC_SUB_CMD) {
         
@@ -139,6 +135,9 @@ void mqtt_loop() {
     }
     mqttClient.loop();
 }
+
+
+//----MqTT publish-funksjoner for ulike data----
 
 void mqtt_send_fart_int(float verdi) {
     if (!mqttClient.connected()) return;
