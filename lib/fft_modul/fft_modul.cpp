@@ -163,7 +163,7 @@ float threshold_analyse() {
     for (int i = 0; i < FFT_N - vindu; i++) {
         float total_variasjon = 0.0f;
         for (int j = i+1; j < i + vindu; j++) {
-            total_variasjon += abs(samples[j] - samples[j-1]);
+            total_variasjon += fabsf(samples[j] - samples[j-1]);
         }
 
         bool er_sville = total_variasjon < SVILLE_TERSKEL;
@@ -198,6 +198,11 @@ bool fft_kjor(float &fart_ut) {
         case 2: //flatt
             fart_kmh = threshold_analyse();
             break;
+        default:
+            lidar_modus = 0; // fallback til avstand
+            fart_kmh = fft_analyse();
+            break;
+
     }
 
 
@@ -206,7 +211,7 @@ bool fft_kjor(float &fart_ut) {
         fart_ut = fart_kmh;
         return true;
     } else {
-        fart_ut = fart_kmh; // Kan være -1.0f for ugyldig måling
+        fart_ut = fart_kmh; // Kan være -5.0f for ugyldig måling
         return false;
     }
     

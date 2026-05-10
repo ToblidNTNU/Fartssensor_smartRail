@@ -19,7 +19,6 @@
 #define MQTT_TOPIC_PUB_VARIABLER  "nr1/variabler"
 #define MQTT_TOPIC_PUB_FFT "nr1/fft"
 
-#define MQTT_TOPIC_SUB  "rpi/broadcast"
 #define MQTT_TOPIC_SUB_CMD  "nr1/tilstand"   // ON; OFF; RESET;
 #define MQTT_TOPIC_SUB_MODUS "nr1/modus"    // STYRKE; AVSTAND; FLATT
 #define MQTT_TOPIC_SUB_TUNING "nr1/tuning"  // Node-RED sender JSON med tuning-parametre hit {"PEAK:3.0"}

@@ -4,4 +4,4 @@
 
 extern volatile bool system_aktiv;
 extern volatile uint8_t lidar_modus;
-extern volatile bool motatt_melding_flagg;
+extern volatile bool mottatt_melding_flagg;

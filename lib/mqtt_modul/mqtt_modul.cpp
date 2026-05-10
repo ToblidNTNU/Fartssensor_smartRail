@@ -105,7 +105,6 @@ static void koble_til_mqtt() {
         Serial.print("Kobler til MQTT...");
         if (mqttClient.connect(MQTT_CLIENT_ID)) {
             Serial.println("tilkoblet.");
-            mqttClient.subscribe(MQTT_TOPIC_SUB);
             mqttClient.subscribe(MQTT_TOPIC_SUB_CMD);
             mqttClient.subscribe(MQTT_TOPIC_SUB_MODUS); 
             mqttClient.subscribe(MQTT_TOPIC_SUB_TUNING);
